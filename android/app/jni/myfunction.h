@@ -1,9 +1,15 @@
 #include <jni.h>
-typedef struct ImageBufferArrayDetails{
-    int* firstElement;
-    int length;
-}ImageBufferArrayDetails;
+#include <stdlib.h>
 
-ImageBufferArrayDetails * getImageBufferPointer();
+typedef struct {
+    int* imageBuffer;
+    int imageBufferLength;
+    void (*setImageName)(char*);
+    int* (*getImage)();
+    void (*loadImage)();
+} JavaImageClass ;
 
-void loadImageBuffer();
+JavaImageClass* JavaImageClassConstructor();
+void setImageName(char*);
+int* getImage();
+void loadImage();

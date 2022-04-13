@@ -1,41 +1,61 @@
 import 'dart:ffi' as ffi;
-
 import 'dart:typed_data';
+import 'package:ffi/ffi.dart';
 
-class ImageBufferArrayDetails extends ffi.Struct {
-  external ffi.Pointer<ffi.Uint8> array;
+class JavaImageClassStructure extends ffi.Struct {
+  external ffi.Pointer<ffi.Uint8> imageBuffer;
 
   @ffi.Int32()
-  external int length;
+  external int imageBufferLength;
+
+  external ffi.Pointer<ffi.NativeFunction<ffi.Void Function(String)>>
+      setImageName;
+
+  external ffi.Pointer<ffi.NativeFunction<ffi.Uint8 Function()>> getImage;
+
+  external ffi.Pointer<ffi.NativeFunction<ffi.Void Function()>> loadImage;
 }
 
-class NativeLibrary {
+typedef NativeSetImageName = ffi.Void Function(ffi.Pointer<ffi.Int8>);
+typedef DartsetImageName = void Function(ffi.Pointer<ffi.Int8>);
+
+class JavaImageClass {
   late ffi.DynamicLibrary dynamicLibrary;
+  late JavaImageClassStructure imageClass;
 
-  NativeLibrary() {
+  JavaImageClass() {
     dynamicLibrary = ffi.DynamicLibrary.open('libnewtojni.so');
+    ffi.Pointer<JavaImageClassStructure> Function() _javaImageClassConstructor =
+        dynamicLibrary
+            .lookup<
+                ffi.NativeFunction<
+                    ffi.Pointer<JavaImageClassStructure>
+                        Function()>>('JavaImageClassConstructor')
+            .asFunction();
+    imageClass = _javaImageClassConstructor().ref;
+    setImageName('flutterLogo.jpg');
+    loadImage();
   }
 
+  void setImageName(String s) {
+    final _setImageName = dynamicLibrary
+        .lookupFunction<NativeSetImageName, DartsetImageName>('setImageName');
+    final ptr = s.toNativeUtf8().cast<ffi.Int8>();
+    _setImageName(ptr);
+  }
 
-  void loadImageBuffer() {
-    void Function() _loadImageBuffer = dynamicLibrary
-        .lookup<ffi.NativeFunction<ffi.Void Function()>>('loadImageBuffer')
+  void loadImage() {
+    void Function() _loadImage = dynamicLibrary
+        .lookup<ffi.NativeFunction<ffi.Void Function()>>('loadImage')
         .asFunction();
-    _loadImageBuffer();
+    _loadImage();
   }
 
-  ffi.Pointer<ImageBufferArrayDetails> getImageBufferPointer() {
-    ffi.Pointer<ImageBufferArrayDetails> Function() temp = dynamicLibrary
-        .lookup<ffi.NativeFunction<ffi.Pointer<ImageBufferArrayDetails> Function()>>(
-            'getImageBufferPointer')
+  Uint8List getImage() {
+    ffi.Pointer<ffi.Uint8> Function() _getImage = dynamicLibrary
+        .lookup<ffi.NativeFunction<ffi.Pointer<ffi.Uint8> Function()>>(
+            'getImage')
         .asFunction();
-    return temp();
-  }
-
-
-  Uint8List getImageBuffer() {
-    loadImageBuffer();
-    ImageBufferArrayDetails data = getImageBufferPointer().cast<ImageBufferArrayDetails>().ref;
-    return data.array.asTypedList(data.length);    
+    return _getImage().asTypedList(imageClass.imageBufferLength);
   }
 }

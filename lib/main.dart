@@ -1,6 +1,3 @@
-import 'dart:ffi';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:gsocgoodproject/nativelibrary.dart';
 
@@ -30,18 +27,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late NativeLibrary nativeLibrary;
-  int _counter = 0;
+  late JavaImageClass javaLibraryApi;
+
   @override
   void initState() {
     super.initState();
-    nativeLibrary = NativeLibrary();
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+    javaLibraryApi = JavaImageClass();
   }
 
   @override
@@ -51,14 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: const Text('GSOC Good Sample Project'),
       ),
       body: Center(
-        child: Image.memory(
-          nativeLibrary.getImageBuffer()
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: Image.memory(javaLibraryApi.getImage()),
       ),
     );
   }
