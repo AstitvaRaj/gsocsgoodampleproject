@@ -1,37 +1,28 @@
 import 'dart:ffi';
+import 'native.dart';
 import 'package:ffi/ffi.dart';
-import 'structs/java_image_details_structure.dart';
 
-typedef jObject = Dart_CObject;
-
-class ImageDetails {
+class ImageDetails extends Native {
   String imageName;
-  late DynamicLibrary dynamicLibrary;
-  late Pointer<jObject> jobjectPtr;
+  late Pointer<Uint32> jObjectPtr;
 
-  ImageDetails(this.imageName){
-    jobjectPtr = getObjectPointer();
+  ImageDetails(this.imageName) {
+    jObjectPtr = constructor(imageName);
+  }
+
+  Pointer<Uint32> constructor(String imageName) {
+    Pointer<Uint32> Function(Pointer<Utf8>) _getObjectPointer = dynamicLibrary
+        .lookup<NativeFunction<Pointer<Uint32> Function(Pointer<Utf8>)>>(
+            'ImageDetails_constructor')
+        .asFunction();
+    return _getObjectPointer(imageName.toNativeUtf8());
   }
 
   String getImageName() {
-    Pointer<Utf8> Function() _getImageName = dynamicLibrary
-        .lookup<NativeFunction<Pointer<Utf8> Function()>>(
+    Pointer<Utf8> Function(Pointer<Uint32>) _getImageName = dynamicLibrary
+        .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<Uint32>)>>(
             'ImageDetails_getImageName')
         .asFunction();
-    return _getImageName().toDartString();
-  }
-
-  Pointer<jObject> getObjectPointer() {
-    Pointer<jObject> Function() _getObjectPointer = dynamicLibrary
-        .lookup<NativeFunction<Pointer<jObject> Function()>>('getObjectPointer')
-        .asFunction();
-    return _getObjectPointer();
-  }
-
-  Pointer<JavaImageDetailsStructure> toStruct() {
-    Pointer<JavaImageDetailsStructure> imageDetails = malloc();
-    imageDetails.ref.imageName = imageName.toNativeUtf8();
-    imageDetails.ref.getImageName = nullptr;
-    return imageDetails;
+    return _getImageName(jObjectPtr).toDartString();
   }
 }

@@ -1,33 +1,29 @@
-import 'dart:ffi' as ffi;
-import 'dart:typed_data';
-import './structs/java_image_class_structure.dart';
-import './structs/java_image_details_structure.dart';
+import 'dart:ffi';
 import 'image_details.dart';
+import 'dart:typed_data';
+import 'native.dart';
+import 'structs/byte_array.dart';
 
-
-
-class JavaImageClass {
-
-  late JavaImageClassStructure imageClass;
-  late ffi.DynamicLibrary dynamicLibrary;
-
+class JavaImageClass extends Native {
+  late Pointer<Uint16> jobject;
   JavaImageClass() {
-    dynamicLibrary = ffi.DynamicLibrary.open('libnewtojni.so');
-    ffi.Pointer<JavaImageClassStructure> Function() _javaImageClassConstructor =
-        dynamicLibrary
-            .lookup<
-                ffi.NativeFunction<
-                    ffi.Pointer<JavaImageClassStructure>
-                        Function()>>('JavaImageClassConstructor')
-            .asFunction();
-    imageClass = _javaImageClassConstructor().ref;
+    jobject = constructor();
   }
 
-  Uint8List getImage(ImageDetails imageStructure) {
-    ffi.Pointer<ffi.Uint8> Function(ffi.Pointer<JavaImageDetailsStructure>) _loadImage = dynamicLibrary
-        .lookup<ffi.NativeFunction<ffi.Pointer<ffi.Uint8> Function(ffi.Pointer<JavaImageDetailsStructure>)>>('JavaImageClass_getImage')
+  Pointer<Uint16> constructor() {
+    Pointer<Uint16> Function() _constructor = dynamicLibrary
+        .lookup<NativeFunction<Pointer<Uint16> Function()>>(
+            'JavaImageClass_constructor')
         .asFunction();
-   return  _loadImage(imageStructure.toStruct()).asTypedList(imageClass.imageBufferLength);
+    return _constructor();
   }
 
+  Uint8List getImage(ImageDetails imageDetails) {
+    Pointer<ByteArray> Function(Pointer<Uint32>) temp = dynamicLibrary
+        .lookup<NativeFunction<Pointer<ByteArray> Function(Pointer<Uint32>)>>(
+            'JavaImageClass_getImage')
+        .asFunction();
+    ByteArray byteArray = temp(imageDetails.jObjectPtr).cast<ByteArray>().ref;
+    return byteArray.imageBuffer.asTypedList(byteArray.imageBufferLength);
+  }
 }

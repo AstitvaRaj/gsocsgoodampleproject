@@ -9,11 +9,14 @@ typedef struct {
 typedef struct {
     int* imageBuffer;
     int imageBufferLength;
-    int* (*getImage)(ImageDetails*);
+} ByteArray;
+
+typedef struct {
+    ByteArray* (*getImage)(ImageDetails*);
 } JavaImageClass ;
 
-JavaImageClass* JavaImageClassConstructor();
-int* JavaImageClass_getImage(ImageDetails*);
 
-ImageDetails* ImageDetailsConstructor(char*);
-char* ImageDetails_getImageName();
+jobject* JavaImageClass_constructor();
+ByteArray* JavaImageClass_getImage(jobject*);
+jobject* ImageDetails_constructor(char*);
+jstring ImageDetails_getImageName(jobject*);

@@ -1,73 +1,67 @@
 #include "myfunction.h"
 static  JavaVM* vm = NULL;
-jclass globalJavaImageClass;
-jobject globalJavaImageClassObject;
-
-jclass globalImageDetailsClass;
-jobject  globalImageDetailsObject;
+jclass JavaImage;
+jclass ImageDetailsClass;
 //Executes when Native Library will load
 JNIEXPORT jint JNI_OnLoad(JavaVM* vms, void* reserved) {
     vm = vms;
     JNIEnv* env;
     (*vm)->GetEnv(vm,(void*) &env,JNI_VERSION_1_6);
     jclass localImageClass = (*env)->FindClass(env,"com/example/gsocgoodproject/JavaImageClass");
-    globalJavaImageClass = (*env)->NewGlobalRef(env,localImageClass);
+    JavaImage = (*env)->NewGlobalRef(env,localImageClass);
     jclass localImageDetails = (*env)->FindClass(env,"com/example/gsocgoodproject/ImageDetails");
-    globalImageDetailsClass = (*env)->NewGlobalRef(env,localImageDetails);
+    ImageDetailsClass = (*env)->NewGlobalRef(env,localImageDetails);
     return JNI_VERSION_1_6;
 }
 
-JavaImageClass* javaImageClass;
+jobject JavaImageObject;
 
-JavaImageClass* JavaImageClassConstructor(){
-    javaImageClass = malloc(sizeof(JavaImageClass));
-    javaImageClass->getImage = &JavaImageClass_getImage;
+jobject* JavaImageClass_constructor(){
     JNIEnv* env;
     (*vm)->GetEnv(vm,(void*) &env,JNI_VERSION_1_6);
-    jmethodID  MethodId = (*env)->GetMethodID(env,globalJavaImageClass,"<init>", "()V");
-    jobject object = (*env)->NewObject(env,globalJavaImageClass,MethodId);
-    globalJavaImageClassObject = (*env)->NewGlobalRef(env,object);
-    return javaImageClass;
+    jmethodID constructor = (*env)->GetMethodID(env,JavaImage,"<init>","()V");
+    jobject object = (*env)->NewObject(env,JavaImage,constructor);
+    JavaImageObject = malloc(sizeof(JavaImageClass));
+    JavaImageObject = (*env)->NewGlobalRef(env,object);
+    return &JavaImageObject;
 }
 
-int* JavaImageClass_getImage(ImageDetails* imageDetails){
+ByteArray* byteArray;
+
+ByteArray* JavaImageClass_getImage(jobject* imageDetailsObject){
     JNIEnv* env;
     (*vm)->GetEnv(vm,(void*) &env,JNI_VERSION_1_6);
-    jmethodID loadImage= (*env)->GetMethodID(env,globalJavaImageClass,"getImage",
+    jmethodID loadImage= (*env)->GetMethodID(env,JavaImage,"getImage",
                                              "(Lcom/example/gsocgoodproject/ImageDetails;)[B");
+    jobject temp = imageDetailsObject;
 
-    jmethodID methodId = (*env)->GetMethodID(env,globalImageDetailsClass,"<init>", "(Ljava/lang/String;)V");
-    jstring imagenames = (*env)->NewStringUTF(env,imageDetails->imageName);
-    jobject imageDetailsObject = (*env)->NewObject(env,globalImageDetailsClass,methodId,imagenames);
-    jobject obj = (*env)->CallObjectMethod(env,globalJavaImageClassObject,loadImage,imageDetailsObject);
+    jobject obj = (*env)->CallObjectMethod(env,JavaImageObject,loadImage,temp);
+
     jbyte* imageByte = (*env)->GetByteArrayElements(env,(jbyteArray) obj,NULL);
-    javaImageClass->imageBufferLength = (*env)->GetArrayLength(env,(jbyteArray)obj);
-    return (int*) imageByte;
+    byteArray = malloc(sizeof(ByteArray));
+    byteArray->imageBufferLength = (*env)->GetArrayLength(env,(jbyteArray)obj);
+    byteArray->imageBuffer = (int*) imageByte;
+    return byteArray;
 }
 
+jobject* ImageDetailsObject;
 
-ImageDetails* imageDetails;
-
-ImageDetails* ImageDetailsConstructor(char* name){
-    imageDetails = malloc(sizeof(ImageDetails));
-    imageDetails->getImageName =  &ImageDetails_getImageName;
+jobject* ImageDetails_constructor(char* name){
     JNIEnv* env;
     (*vm)->GetEnv(vm,(void*) &env,JNI_VERSION_1_6);
-    jmethodID  MethodId = (*env)->GetMethodID(env,globalImageDetailsClass,"<init>",
-                                              "(Ljava/lang/String;)V");
-    jstring imageNames = (*env)->NewStringUTF(env,name);
-    jobject object = (*env)->NewObject(env,globalImageDetailsClass,MethodId,imageNames);
-    globalImageDetailsObject = (*env)->NewGlobalRef(env,object);
-    return imageDetails;
+    jmethodID constructor = (*env)->GetMethodID(env,ImageDetailsClass,"<init>",
+                                                "(Ljava/lang/String;)V");
+    jstring imageName = (*env)->NewStringUTF(env,name);
+    jobject object = (*env)->NewObject(env,ImageDetailsClass,constructor,imageName);
+    ImageDetailsObject = malloc(sizeof(ImageDetails));
+    ImageDetailsObject = (*env)->NewGlobalRef(env,object);
+    return ImageDetailsObject;
 }
 
-
-char *ImageDetails_getImageName() {
+jstring ImageDetails_getImageName(jobject* detailsObject){
     JNIEnv* env;
     (*vm)->GetEnv(vm,(void*) &env,JNI_VERSION_1_6);
-    jmethodID methodId = (*env)->GetMethodID(env,globalImageDetailsClass,"getImageName",
-                                             "()Ljava/lang/String;");
-    jobject jStr = (*env)->CallObjectMethod(env,globalImageDetailsObject,methodId);
-    char* temp = (char *) (*env)->GetCharArrayElements(env, jStr, 0);
-    return temp;
+    jmethodID  methodId =  (*env)->GetMethodID(env,ImageDetailsClass,"getImageName", "()Ljava/lang/String;");
+    jstring s = (*env)->CallObjectMethod(env,*detailsObject,methodId);
+    return s;
 }

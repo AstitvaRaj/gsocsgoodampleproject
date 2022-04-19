@@ -31,7 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late JavaImageClass javaLibraryApi;
   late ImageDetails firstObject;
   late ImageDetails secondObject;
-  
+
   @override
   void initState() {
     super.initState();
