@@ -12,21 +12,16 @@ import java.nio.file.Paths;
 
 @Keep
 public class JavaImageClass {
-    private byte[] ImageBuffer;
-    private String name;
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void loadImage(){
+    public byte[] getImage(ImageDetails imageDetails){
+        byte[] i = {};
         try {
             String internalStoragePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-            ImageBuffer = Files.readAllBytes(Paths.get(internalStoragePath+'/'+name));
-        } catch (IOException e) {
+            i = Files.readAllBytes(Paths.get(internalStoragePath+'/'+imageDetails.getImageName()));
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
-    }
-    public void setImageName(String name){
-        this.name = name;
-    }
-    public byte[] getImage(){
-        return ImageBuffer;
+        return i;
     }
 }

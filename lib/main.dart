@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gsocgoodproject/nativelibrary.dart';
+import 'package:gsocgoodproject/java_image_class.dart';
+import 'image_details.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,11 +29,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late JavaImageClass javaLibraryApi;
-
+  late ImageDetails firstObject;
+  late ImageDetails secondObject;
+  
   @override
   void initState() {
     super.initState();
     javaLibraryApi = JavaImageClass();
+    firstObject = ImageDetails('flutterLogo.jpg');
+    secondObject = ImageDetails('a.jpg');
   }
 
   @override
@@ -42,7 +47,16 @@ class _MyHomePageState extends State<MyHomePage> {
         title: const Text('GSOC Good Sample Project'),
       ),
       body: Center(
-        child: Image.memory(javaLibraryApi.getImage()),
+        child: ListView(
+          children: [
+            Image.memory(
+              javaLibraryApi.getImage(firstObject),
+            ),
+            Image.memory(
+              javaLibraryApi.getImage(secondObject),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -2,14 +2,18 @@
 #include <stdlib.h>
 
 typedef struct {
+    char* imageName;
+    char* (*getImageName)();
+} ImageDetails;
+
+typedef struct {
     int* imageBuffer;
     int imageBufferLength;
-    void (*setImageName)(char*);
-    int* (*getImage)();
-    void (*loadImage)();
+    int* (*getImage)(ImageDetails*);
 } JavaImageClass ;
 
 JavaImageClass* JavaImageClassConstructor();
-void setImageName(char*);
-int* getImage();
-void loadImage();
+int* JavaImageClass_getImage(ImageDetails*);
+
+ImageDetails* ImageDetailsConstructor(char*);
+char* ImageDetails_getImageName();
